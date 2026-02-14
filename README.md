@@ -1,156 +1,188 @@
 
-🚀 OpenClaw Setup on Termux (ARM) using proot Ubuntu
+# 🚀 OpenClaw Setup on Termux (ARM) using proot Ubuntu
 
-This guide helps you install and run OpenClaw inside Termux using a proot Ubuntu environment on ARM devices (Android).
-
-It also fixes the common Node.js error:
-
-uv_interface_addresses returned Unknown system error 13
-
+Run **OpenClaw** inside Termux on Android (ARM64) using a `proot` Ubuntu environment.
 
 ---
 
-📱 Requirements
+## 📱 Requirements
 
-Android device
-
-Latest Termux (F-Droid recommended)
-
-Internet connection
-
-
+* Android (ARM64)
+* Latest **Termux** (F-Droid recommended)
+* Stable Internet connection
+* At least 2GB free storage
 
 ---
 
-🛠 Step 1: Update Termux
+## 🛠 Step 1: Prepare Termux
 
-pkg update && pkg upgrade -y
-pkg install proot-distro -y
+Update packages and install `proot-distro`:
 
+```bash
+pkg update -y && pkg upgrade -y && pkg install proot-distro -y
+```
 
 ---
 
-🐧 Step 2: Install Ubuntu (ARM)
+## 🐧 Step 2: Install & Login to Ubuntu (ARM)
 
-proot-distro install ubuntu
-proot-distro login ubuntu
+```bash
+proot-distro install ubuntu && proot-distro login ubuntu
+```
 
 You are now inside Ubuntu.
 
+---
+
+## 📦 Step 3: Install Base Dependencies
+
+```bash
+apt update -y && apt upgrade -y && \
+apt install -y curl git build-essential ca-certificates
+```
 
 ---
 
-📦 Step 3: Update Ubuntu & Install Base Tools
+## 🟢 Step 4: Install Node.js 22
 
-apt update && apt upgrade -y
-apt install curl git build-essential ca-certificates -y
-
-
----
-
-🟢 Step 4: Install Node.js 22
-
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 apt install -y nodejs
+```
 
-Verify installation:
+Verify:
 
+```bash
 node -v
 npm -v
-
+```
 
 ---
 
-🧩 Step 5: Install OpenClaw
+## 🧩 Step 5: Install OpenClaw
 
+```bash
 npm install -g openclaw@latest
-
-
----
-
-🛡 Step 6: Fix uv_interface_addresses Error (Required in proot)
-
-Create hijack file:
-
-cat << 'eof' > /root/hijack.js
-const os = require('os');
-os.networkInterfaces = () => ({});
-eof
-
-Make it permanent:
-
-echo 'export NODE_OPTIONS="--require /root/hijack.js"' >> ~/.bashrc
-source ~/.bashrc
-
-This prevents Node.js from trying to access restricted network interfaces inside proot.
-
+```
 
 ---
 
-🚀 Step 7: Run OpenClaw
+## 🛡 Step 6: Fix `uv_interface_addresses` Error (IMPORTANT)
 
+`proot` blocks certain network syscalls used by Node.js.
+
+We override `os.networkInterfaces()` to prevent the crash.
+
+### Create hijack file:
+
+```bash
+echo "const os = require('os'); os.networkInterfaces = () => ({});" > /root/hijack.js
+```
+
+### Make it permanent:
+
+```bash
+echo 'export NODE_OPTIONS="--require /root/hijack.js"' >> ~/.bashrc && source ~/.bashrc
+```
+
+---
+
+## 🚀 Step 7: Run OpenClaw
+
+```bash
 openclaw onboard
-
+```
 
 ---
 
-📌 Full One-Shot Install Script
+# ⚡ One-Shot Installation (Fully Combined)
 
-If you want everything in one go:
+### Run this in Termux:
 
-pkg update && pkg upgrade -y && pkg install proot-distro -y && \
-proot-distro install ubuntu && \
+```bash
+pkg update -y && pkg upgrade -y && pkg install proot-distro -y && \
+proot-distro install ubuntu
+```
+
+### Then login:
+
+```bash
 proot-distro login ubuntu
+```
 
-Then inside Ubuntu:
+### Inside Ubuntu run:
 
-apt update && apt upgrade -y && \
-apt install curl git build-essential ca-certificates -y && \
+```bash
+apt update -y && apt upgrade -y && \
+apt install -y curl git build-essential ca-certificates && \
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 apt install -y nodejs && \
 npm install -g openclaw@latest && \
 echo "const os = require('os'); os.networkInterfaces = () => ({});" > /root/hijack.js && \
 echo 'export NODE_OPTIONS="--require /root/hijack.js"' >> ~/.bashrc && \
-source ~/.bashrc && \
-openclaw onboard
+source ~/.bashrc
+```
 
+Now start:
+
+```bash
+openclaw onboard
+```
 
 ---
 
-⚠ Notes
+# 🔄 If Error Still Persists
 
-Works on ARM64 Android devices.
+Restart Ubuntu session:
 
-Tested in proot Ubuntu environment.
-
-Required because proot blocks certain network syscalls.
-
-If error persists, restart Ubuntu session:
-
-
+```bash
 exit
 proot-distro login ubuntu
-
+```
 
 ---
 
-🧠 Why This Fix Works
+# 🧠 Why This Fix Works
 
-OpenClaw (Node.js) tries to read system network interfaces.
-proot restricts this → causes system error 13.
+OpenClaw (Node.js) tries to access system network interfaces.
+
+Inside `proot`, restricted syscalls cause:
+
+```
+uv_interface_addresses returned Unknown system error 13
+```
 
 We override:
 
+```js
 os.networkInterfaces()
+```
 
 to return an empty object — preventing the crash.
 
+---
+
+# 📌 Tested Environment
+
+* Android ARM64
+* Termux (F-Droid)
+* proot Ubuntu
+* Node.js 22
 
 ---
 
-👨‍💻 Author
+# 👨‍💻 Author
 
-Setup optimized for mobile ARM Linux environments.
-
+Optimized for mobile ARM Linux environments running inside Termux.
 
 ---
+
+If you want, I can also:
+
+* 🔥 Make it look more hacker-style themed
+* 📄 Generate a GitHub badge version
+* 🐧 Add automatic reinstall script
+* 🧠 Create troubleshooting section
+* 📦 Add uninstall guide
+
+Just tell me what vibe you want 😄
