@@ -176,13 +176,3 @@ to return an empty object — preventing the crash.
 Optimized for mobile ARM Linux environments running inside Termux.
 
 ---
-
-If you want, I can also:
-
-* 🔥 Make it look more hacker-style themed
-* 📄 Generate a GitHub badge version
-* 🐧 Add automatic reinstall script
-* 🧠 Create troubleshooting section
-* 📦 Add uninstall guide
-
-Just tell me what vibe you want 😄
